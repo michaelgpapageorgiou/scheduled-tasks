@@ -29,4 +29,4 @@ if today in birthdays_dict:
         connection.login(password=password,user=my_email)
         connection.sendmail(from_addr=my_email,to_addrs=the_special_one['email'],
                             msg=f'subject:Happy Birthday\n\n{letter_ready}')
-        )
+        
