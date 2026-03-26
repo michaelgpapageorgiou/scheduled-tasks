@@ -9,7 +9,7 @@ import datetime, pandas
 import random,smtplib,os
 
 my_email=os.environ.get('MY_EMAIL')
-password='os.environ.get('MY_PASSWORD')
+password=os.environ.get('MY_PASSWORD')
 
 now=datetime.datetime.now()
 today_month=now.month
