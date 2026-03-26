@@ -6,10 +6,10 @@
 # See the solution video in the 100 Days of Python Course for explainations.
 
 import datetime, pandas
-import random,smtplib
+import random,smtplib,os
 
-my_email='michael.g.papageorgiou@gmail.com'
-password='delaelazlcynilio'
+my_email=os.environ.get('MY_EMAIL')
+password='os.environ.get('MY_PASSWORD')
 
 now=datetime.datetime.now()
 today_month=now.month
