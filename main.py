@@ -1,32 +1,56 @@
-# To run and test the code you need to update 4 places:
-# 1. Change MY_EMAIL/MY_PASSWORD to your own details.
-# 2. Go to your email provider and make it allow less secure apps.
-# 3. Update the SMTP ADDRESS to match your email provider.
-# 4. Update birthdays.csv to contain today's month and day.
-# See the solution video in the 100 Days of Python Course for explainations.
+import requests,os
+from twilio.rest import Client
+STOCK_NAME = "TSLA"
+COMPANY_NAME = "Tesla Inc"
 
-import datetime, pandas
-import random,smtplib,os
+STOCK_ENDPOINT = "https://www.alphavantage.co/query"
+NEWS_ENDPOINT = "https://newsapi.org/v2/everything"
 
-my_email=os.environ.get('MY_EMAIL')
-password=os.environ.get('MY_PASSWORD')
+parameters_stock_site={
+    'function':'TIME_SERIES_DAILY',
+    'symbol':STOCK_NAME,
+    'apikey':os.environ.get('STOCK_API_KEY'),
+}
+parameters_news_site={
+    'q':COMPANY_NAME,
+    'language':'en',
+    'searchIn':'title,description',
+    'apikey':os.environ.get('NEWS_API_KEY'),
+}
 
-now=datetime.datetime.now()
-today_month=now.month
-today_day=now.day
-today=(today_day,today_month)
-data=pandas.read_csv('birthdays.csv')
-#birthdays_dict={(row.day,row.month):(row['name'],row.email,row.year,row.month,row.day) for (index,row) in data.iterrows()}
-birthdays_dict={(row.day,row.month):row for (index,row) in data.iterrows()}
-if today in birthdays_dict:
-    the_special_one = birthdays_dict[today]
-    with open(f'letter_templates/letter_{random.randint(1,3)}.txt','r') as letter:
-        letter=letter.read()
-        letter_ready=letter.replace('[NAME]',the_special_one['name'])
-        print(letter_ready)
-    with smtplib.SMTP('smtp.gmail.com') as connection:
-        connection.starttls()
-        connection.login(password=password,user=my_email)
-        connection.sendmail(from_addr=my_email,to_addrs=the_special_one['email'],
-                            msg=f'subject:Happy Birthday\n\n{letter_ready}')
-        
+    ## STEP 1: Use https://www.alphavantage.co/documentation/#daily
+# When stock price increase/decreases by 5% between yesterday and the day before yesterday then print("Get News").
+response_stock=requests.get(STOCK_ENDPOINT, params=parameters_stock_site)
+response_stock.raise_for_status()
+data=response_stock.json()
+days=data['Time Series (Daily)']
+print(days)
+closing_prices=[close['4. close'] for (days,close) in days.items()]
+#print(closing_prices)
+new_price=float(closing_prices[0])
+old_price=float(closing_prices[1])
+difference=(new_price-old_price)/old_price*100
+print(difference)
+if difference<0:
+    symbol='🔻'
+else:
+    symbol="🔺"
+percent=int(abs(difference))
+print(percent)
+if percent >= 0 :
+    response_news=requests.get(NEWS_ENDPOINT,params=parameters_news_site)
+    response_news.raise_for_status()
+    news=response_news.json()
+    articles=news['articles'][:3]
+    #print(articles)
+    ready_to_send=[(arti['title'], arti['description']) for arti in articles]
+    print(ready_to_send)
+    client = Client(os.environ.get('account_sid'),os.environ.get('auth_token'))
+    for title, description in ready_to_send:
+        message=client.messages.create(
+            from_=f"whatsapp:{os.environ.get('whatapp_number')}",
+            body=f'{STOCK_NAME}: {symbol} {percent}%\nHeadline: {title}.\n\nBrief: {description}',
+            to=f"whatsapp:{os.environ.get('MY_NUMBER')}"
+            )
+        print(message.status)
+
