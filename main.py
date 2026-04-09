@@ -35,7 +35,7 @@ if difference<0:
     symbol='🔻'
 else:
     symbol="🔺"
-percent=int(abs(difference))
+percent=round(abs(difference))
 print(percent)
 if percent >= 0 :
     response_news=requests.get(NEWS_ENDPOINT,params=parameters_news_site)
