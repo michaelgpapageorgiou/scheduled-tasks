@@ -45,10 +45,10 @@ if percent >= 0 :
     #print(articles)
     ready_to_send=[(arti['title'], arti['description']) for arti in articles]
     print(ready_to_send)
-    client = Client(os.environ.get('account_sid'),os.environ.get('auth_token'))
+    client = Client(os.environ.get('ACCOUNT_SID'),os.environ.get('AUTH_TOKEN'))
     for title, description in ready_to_send:
         message=client.messages.create(
-            from_=f"whatsapp:{os.environ.get('whatapp_number')}",
+            from_=f"whatsapp:{os.environ.get('WHATSAPP_NUMBER')}",
             body=f'{STOCK_NAME}: {symbol} {percent}%\nHeadline: {title}.\n\nBrief: {description}',
             to=f"whatsapp:{os.environ.get('MY_NUMBER')}"
             )
