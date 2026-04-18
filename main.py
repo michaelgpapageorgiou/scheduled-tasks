@@ -37,7 +37,7 @@ else:
     symbol="🔺"
 percent=round(abs(difference))
 print(percent)
-if percent >= 0 :
+if percent >= 5 :
     response_news=requests.get(NEWS_ENDPOINT,params=parameters_news_site)
     response_news.raise_for_status()
     news=response_news.json()
